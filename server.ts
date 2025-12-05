@@ -31,17 +31,36 @@ app.prepare().then(() => {
             }
         });
 
-        socket.on("subscribe-logs", async (containerId) => {
-            console.log(`Subscribing to logs for container: ${containerId}`);
+        socket.on("subscribe-logs", async (containerId, timeRange = "5m") => {
+            console.log(`Subscribing to logs for container: ${containerId} with range: ${timeRange}`);
             try {
                 const container = docker.getContainer(containerId);
+
+                // Calculate since timestamp
+                let since = 0;
+                const now = Math.floor(Date.now() / 1000);
+
+                const match = timeRange.match(/^(\d+)([smhdw])$/);
+                if (match) {
+                    const value = parseInt(match[1]);
+                    const unit = match[2];
+                    let seconds = 0;
+                    switch (unit) {
+                        case 's': seconds = value; break;
+                        case 'm': seconds = value * 60; break;
+                        case 'h': seconds = value * 3600; break;
+                        case 'd': seconds = value * 86400; break;
+                        case 'w': seconds = value * 604800; break;
+                    }
+                    since = now - seconds;
+                }
 
                 // Get logs stream
                 const stream = await container.logs({
                     follow: true,
                     stdout: true,
                     stderr: true,
-                    tail: 100, // Get last 100 lines
+                    since: since,
                 });
 
                 console.log("Stream established for", containerId);
