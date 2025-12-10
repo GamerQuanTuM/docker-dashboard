@@ -1,11 +1,11 @@
-import { createServer } from "node:http";
 import next from "next";
+import { createServer } from "node:http";
+import { PassThrough } from "node:stream";
 import { Server } from "socket.io";
 import Docker from "dockerode";
-import { PassThrough } from "node:stream";
-import { loadEnvConfig } from "@next/env";
+import dotenv from "dotenv";
 
-loadEnvConfig(process.cwd());
+dotenv.config();
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
