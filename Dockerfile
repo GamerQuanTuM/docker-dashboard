@@ -40,9 +40,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/dist ./dist
 
-EXPOSE 3000
+EXPOSE 6199
 
-ENV PORT=3000
+ENV PORT=6199
 ENV HOSTNAME="0.0.0.0"
 
 # Note: This application requires access to the Docker socket.

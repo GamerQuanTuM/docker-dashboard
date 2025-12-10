@@ -3,11 +3,13 @@ import next from "next";
 import { Server } from "socket.io";
 import Docker from "dockerode";
 import { PassThrough } from "node:stream";
+import { loadEnvConfig } from "@next/env";
+
+loadEnvConfig(process.cwd());
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = "localhost";
-const port = 3000;
-// when using middleware `hostname` and `port` must be provided below
+const hostname = process.env.HOSTNAME || "localhost";
+const port = parseInt(process.env.PORT || "3000", 10);
 const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();
 
@@ -16,7 +18,14 @@ const docker = new Docker();
 app.prepare().then(() => {
     const httpServer = createServer(handler);
 
-    const io = new Server(httpServer);
+    const io = new Server(httpServer, {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST"]
+        },
+        path: "/socket.io",
+        transports: ["websocket", "polling"]
+    });
 
     io.on("connection", (socket) => {
         console.log("Client connected");
